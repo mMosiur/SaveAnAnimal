@@ -1,0 +1,47 @@
+﻿@page "/pet/{id}"
+@using SaveAnAnimal.ApiClient
+@using SaveAnAnimal.ApiClient.Models
+
+@inject SaveAnAnimalClient client
+
+<h3>Pet details</h3>
+
+@if (pet is null)
+{
+	@if(isFound)
+	{
+		<p>Loading...</p>
+	}
+	else
+	{
+		<p>Not found</p>
+	}
+}
+else
+{
+	<p>@pet.Type</p>
+	<p>Name: @pet.Name</p>
+	<p>Color: @(@pet.Color ?? "Unknown")</p>
+}
+
+@code {
+	[Parameter]
+	public string Id { get; set; } = null!;
+
+	private Pet? pet { get; set; }
+
+	private bool isFound = true;
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			pet = await client.GetPetAsync(Id);
+			isFound = pet is not null;
+		}
+		catch(FormatException)
+		{
+			isFound = false;
+		}
+	}
+}

@@ -1,0 +1,40 @@
+﻿@using SaveAnAnimal.ApiClient
+@using SaveAnAnimal.ApiClient.Models
+
+@inject SaveAnAnimalClient client
+@inject ILogger<AllPets> logger
+
+@page "/pets"
+
+<h3>Our dear pets:</h3>
+
+@if (pets is null)
+{
+	<p>Loading data...</p>
+}
+else if(pets.Count == 0)
+{
+	<p>None</p>
+}
+else
+{
+	<ul>
+	@foreach (var pet in pets)
+		{
+			string link = "pet/" + @pet.Id;
+			<li><NavLink href="@link">@pet.Name</NavLink></li>
+		}	
+	</ul>
+}
+
+
+
+@code {
+	private IList<Pet>? pets = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		logger.LogWarning("Hello");
+		pets = await client.GetPetsAsync();
+	}
+}
