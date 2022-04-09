@@ -99,6 +99,7 @@ public class PetController : ControllerBase
 		}
 		pet.Name = request.Name ?? pet.Name;
 		pet.Type = request.Type ?? pet.Type;
+		pet.Age = request.Age ?? pet.Age;
 		pet.Color = request.Color ?? pet.Color;
 		await _petService.UpdatePet(pet);
 		var response = _mapper.Map<PetDetailsResponse>(pet);

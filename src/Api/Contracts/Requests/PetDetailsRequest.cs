@@ -12,5 +12,7 @@ public class PetDetailsRequest
 	[JsonConverter(typeof(JsonStringEnumConverter))]
 	public PetType Type { get; set; }
 
+	public int? Age { get; set; }
+
 	public string? Color { get; set; }
 }

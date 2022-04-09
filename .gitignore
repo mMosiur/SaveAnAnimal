@@ -431,3 +431,4 @@ FodyWeavers.xsd
 
 # Ignore database files
 *.db
+*.db*
