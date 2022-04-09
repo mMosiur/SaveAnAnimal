@@ -84,7 +84,7 @@ public class VolunteerController : ControllerBase
 	}
 
 	[HttpPost("{id:guid}/assign-pet")]
-	public async Task<IActionResult> PostVolunteerAssignPet(Guid id, AssignPetRequest request, [FromServices] PetService petService)
+	public async Task<IActionResult> PostVolunteerAssignPet(Guid id, VolunteerAssignPetRequest request, [FromServices] PetService petService)
 	{
 		_logger.LogInformation("Get Volunteer id '{id}' request received", id);
 		var volunteer = await _volunteerService.GetVolunteerById(id);
