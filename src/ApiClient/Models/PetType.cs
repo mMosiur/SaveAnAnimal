@@ -4,12 +4,12 @@ namespace SaveAnAnimal.ApiClient.Models;
 
 public enum PetType
 {
-    [EnumMember(Value = "unknown")]
-    Unknown,
+	[EnumMember(Value = "unknown")]
+	Unknown,
 
-    [EnumMember(Value = "dog")]
-    Dog,
+	[EnumMember(Value = "dog")]
+	Dog,
 
-    [EnumMember(Value = "cat")]
-    Cat
+	[EnumMember(Value = "cat")]
+	Cat
 }

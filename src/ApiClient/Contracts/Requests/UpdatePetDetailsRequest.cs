@@ -6,7 +6,7 @@ namespace SaveAnAnimal.ApiClient.Contracts.Requests;
 
 public class UpdatePetDetailsRequest
 {
-    public string? Name { get; set; }
+	public string? Name { get; set; }
 
 	[EnumDataType(typeof(PetType))]
 	[JsonConverter(typeof(JsonStringEnumConverter))]
