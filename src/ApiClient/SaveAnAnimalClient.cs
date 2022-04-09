@@ -13,6 +13,7 @@ public partial class SaveAnAnimalClient
 	{
 		config.CreateMap<PetDetailsResponse, Pet>();
 		config.CreateMap<VolunteerDetailsResponse, Volunteer>();
+		config.CreateMap<PetCareDetailsResponse, PetCare>();
 	}).CreateMapper();
 
 	private readonly HttpClient _http;
@@ -127,5 +128,33 @@ public partial class SaveAnAnimalClient
 	public async Task<PetCare?> GetCurrentPetCareAsync(Guid petId)
 	{
 		string requestUrl = $"{BaseApiUrl}/pet/{petId}/current-care";
+		var response = await _http.GetAsync(requestUrl);
+		response.EnsureSuccessStatusCode();
+		var petCareDetails = await response.Content.ReadFromJsonAsync<PetCareDetailsResponse>();
+		if (petCareDetails is null)
+		{
+			return null;
+		}
+		return _mapper.Map<PetCare>(petCareDetails);
+	}
+
+	public async Task<IEnumerable<Pet>> GetPetsCurrentlyCaredFor(Guid volunteerId)
+	{
+		string requestUrl = $"{BaseApiUrl}/volunteer/{volunteerId}/pets";
+		var response = await _http.GetAsync(requestUrl);
+		response.EnsureSuccessStatusCode();
+		var pets = await response.Content.ReadFromJsonAsync<IEnumerable<PetDetailsResponse>>();
+		pets ??= Enumerable.Empty<PetDetailsResponse>();
+		return pets.Select(_mapper.Map<Pet>);
+	}
+
+	public async Task<PetCare> AssignPetToCaretaker(Guid petId, Guid volunteerId)
+	{
+		string requestUrl = $"{BaseApiUrl}/volunteer/{volunteerId}/assign-pet";
+		var request = new VolunteerAssignPetRequest(petId);
+		var response = await _http.PostAsJsonAsync(requestUrl, request);
+		response.EnsureSuccessStatusCode();
+		var care = await response.Content.ReadFromJsonAsync<PetCareDetailsResponse>();
+		return _mapper.Map<PetCare>(care);
 	}
 }
