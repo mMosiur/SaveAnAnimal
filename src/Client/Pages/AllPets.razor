@@ -22,7 +22,7 @@ else
 		{
 			string link = "pet/" + @pet.Id;
 			<li><NavLink href="@link">@pet.Name</NavLink></li>
-		}	
+		}
 	</ul>
 }
 
@@ -33,6 +33,6 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		pets = await client.GetPetsAsync();
+		pets = (await client.GetPetsAsync()).ToList();
 	}
 }
