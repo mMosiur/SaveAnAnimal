@@ -17,21 +17,20 @@ public partial class SaveAnAnimalClient
 	}).CreateMapper();
 
 	private readonly HttpClient _http;
-	public string BaseApiUrl { get; }
+	public Uri? BaseApiUrl { get => _http.BaseAddress; set => _http.BaseAddress = value; }
 
-	public SaveAnAnimalClient(string baseApiUrl, HttpClient? http = null)
+	public SaveAnAnimalClient(string baseApiUrl)
 	{
 		if (baseApiUrl.EndsWith('/'))
 		{
 			baseApiUrl = baseApiUrl[0..^1];
 		}
-		BaseApiUrl = baseApiUrl;
-		_http = http ?? new HttpClient();
+		_http = new HttpClient { BaseAddress = new Uri(baseApiUrl) };
 	}
 
 	public async Task<IEnumerable<Pet>> GetPetsAsync()
 	{
-		string requestUrl = $"{BaseApiUrl}/pet";
+		string requestUrl = $"/pet";
 		var response = await _http.GetAsync(requestUrl);
 		response.EnsureSuccessStatusCode();
 		var pets = await response.Content.ReadFromJsonAsync<IEnumerable<PetDetailsResponse>>();
@@ -41,7 +40,7 @@ public partial class SaveAnAnimalClient
 
 	public async Task<Pet?> GetPetAsync(Guid id)
 	{
-		string requestUrl = $"{BaseApiUrl}/pet/{id}";
+		string requestUrl = $"/pet/{id}";
 		var response = await _http.GetAsync(requestUrl);
 		if (response.StatusCode == HttpStatusCode.NotFound)
 		{
@@ -54,7 +53,7 @@ public partial class SaveAnAnimalClient
 
 	public async Task<Pet> CreatePetAsync(PetDetailsRequest request)
 	{
-		string requestUrl = $"{BaseApiUrl}/pet";
+		string requestUrl = $"/pet";
 		var response = await _http.PostAsJsonAsync(requestUrl, request);
 		response.EnsureSuccessStatusCode();
 		var pet = await response.Content.ReadFromJsonAsync<PetDetailsResponse>();
@@ -63,7 +62,7 @@ public partial class SaveAnAnimalClient
 
 	public async Task<Pet> UpdatePetAsync(UpdatePetDetailsRequest request)
 	{
-		string requestUrl = $"{BaseApiUrl}/pet";
+		string requestUrl = $"/pet";
 		var response = await _http.PutAsJsonAsync(requestUrl, request);
 		response.EnsureSuccessStatusCode();
 		var pet = await response.Content.ReadFromJsonAsync<PetDetailsResponse>();
@@ -72,14 +71,14 @@ public partial class SaveAnAnimalClient
 
 	public async Task DeletePetAsync(Guid id)
 	{
-		string requestUrl = $"{BaseApiUrl}/pet/{id}";
+		string requestUrl = $"/pet/{id}";
 		var response = await _http.DeleteAsync(requestUrl);
 		response.EnsureSuccessStatusCode();
 	}
 
 	public async Task<IEnumerable<Volunteer>> GetVolunteersAsync()
 	{
-		string requestUrl = $"{BaseApiUrl}/volunteer";
+		string requestUrl = $"/volunteer";
 		var response = await _http.GetAsync(requestUrl);
 		response.EnsureSuccessStatusCode();
 		var volunteers = await response.Content.ReadFromJsonAsync<IEnumerable<VolunteerDetailsResponse>>();
@@ -89,7 +88,7 @@ public partial class SaveAnAnimalClient
 
 	public async Task<Volunteer?> GetVolunteerAsync(Guid id)
 	{
-		string requestUrl = $"{BaseApiUrl}/volunteer/{id}";
+		string requestUrl = $"/volunteer/{id}";
 		var response = await _http.GetAsync(requestUrl);
 		if (response.StatusCode == HttpStatusCode.NotFound)
 		{
@@ -102,7 +101,7 @@ public partial class SaveAnAnimalClient
 
 	public async Task<Volunteer> CreateVolunteerAsync(VolunteerDetailsRequest request)
 	{
-		string requestUrl = $"{BaseApiUrl}/volunteer";
+		string requestUrl = $"/volunteer";
 		var response = await _http.PostAsJsonAsync(requestUrl, request);
 		response.EnsureSuccessStatusCode();
 		var volunteer = await response.Content.ReadFromJsonAsync<VolunteerDetailsResponse>();
@@ -111,7 +110,7 @@ public partial class SaveAnAnimalClient
 
 	public async Task<Volunteer> UpdateVolunteerAsync(Guid id, UpdateVolunteerDetailsRequest request)
 	{
-		string requestUrl = $"{BaseApiUrl}/volunteer/{id}";
+		string requestUrl = $"/volunteer/{id}";
 		var response = await _http.PutAsJsonAsync(requestUrl, request);
 		response.EnsureSuccessStatusCode();
 		var volunteer = await response.Content.ReadFromJsonAsync<VolunteerDetailsResponse>();
@@ -120,14 +119,14 @@ public partial class SaveAnAnimalClient
 
 	public async Task DeleteVolunteerAsync(Guid id)
 	{
-		string requestUrl = $"{BaseApiUrl}/volunteer/{id}";
+		string requestUrl = $"/volunteer/{id}";
 		var response = await _http.DeleteAsync(requestUrl);
 		response.EnsureSuccessStatusCode();
 	}
 
 	public async Task<PetCare?> GetCurrentPetCareAsync(Guid petId)
 	{
-		string requestUrl = $"{BaseApiUrl}/pet/{petId}/current-care";
+		string requestUrl = $"/pet/{petId}/current-care";
 		var response = await _http.GetAsync(requestUrl);
 		response.EnsureSuccessStatusCode();
 		var petCareDetails = await response.Content.ReadFromJsonAsync<PetCareDetailsResponse>();
@@ -140,7 +139,7 @@ public partial class SaveAnAnimalClient
 
 	public async Task<IEnumerable<Pet>> GetPetsCurrentlyCaredFor(Guid volunteerId)
 	{
-		string requestUrl = $"{BaseApiUrl}/volunteer/{volunteerId}/pets";
+		string requestUrl = $"/volunteer/{volunteerId}/pets";
 		var response = await _http.GetAsync(requestUrl);
 		response.EnsureSuccessStatusCode();
 		var pets = await response.Content.ReadFromJsonAsync<IEnumerable<PetDetailsResponse>>();
@@ -150,7 +149,7 @@ public partial class SaveAnAnimalClient
 
 	public async Task<PetCare> AssignPetToCaretaker(Guid petId, Guid volunteerId)
 	{
-		string requestUrl = $"{BaseApiUrl}/volunteer/{volunteerId}/assign-pet";
+		string requestUrl = $"/volunteer/{volunteerId}/assign-pet";
 		var request = new VolunteerAssignPetRequest(petId);
 		var response = await _http.PostAsJsonAsync(requestUrl, request);
 		response.EnsureSuccessStatusCode();
