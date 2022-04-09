@@ -7,7 +7,7 @@ using System.Net.Http.Json;
 
 namespace SaveAnAnimal.ApiClient;
 
-public class SaveAnAnimalClient
+public partial class SaveAnAnimalClient
 {
 	private static readonly IMapper _mapper = new MapperConfiguration(config =>
 	{
@@ -122,5 +122,10 @@ public class SaveAnAnimalClient
 		string requestUrl = $"{BaseApiUrl}/volunteer/{id}";
 		var response = await _http.DeleteAsync(requestUrl);
 		response.EnsureSuccessStatusCode();
+	}
+
+	public async Task<PetCare?> GetCurrentPetCareAsync(Guid petId)
+	{
+		string requestUrl = $"{BaseApiUrl}/pet/{petId}/current-care";
 	}
 }

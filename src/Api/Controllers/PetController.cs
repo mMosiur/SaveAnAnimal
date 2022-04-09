@@ -56,15 +56,7 @@ public class PetController : ControllerBase
 	[HttpGet("{id:guid}/current-care")]
 	public async Task<IActionResult> GetPetCurrentCare(Guid id)
 	{
-		Pet? pet;
-		try
-		{
-			pet = await _petService.GetPetById(id);
-		}
-		catch (FormatException)
-		{
-			return BadRequest($"Invalid pet id: '{id}'");
-		}
+		Pet? pet = await _petService.GetPetById(id);
 		if (pet is null)
 		{
 			return NotFound($"Pet id '{id}' not found");
@@ -72,7 +64,7 @@ public class PetController : ControllerBase
 		var care = await _petService.GetCurrentCare(pet);
 		if (care is null || care.To is not null)
 		{
-			return NotFound($"Pet id '{id}' is not currently being cared for");
+			return Ok();
 		}
 		var response = _mapper.Map<PetCareDetailsResponse>(care);
 		return Ok(response);
