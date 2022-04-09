@@ -14,13 +14,15 @@ public class VolunteerController : ControllerBase
 {
 	readonly ILogger<VolunteerController> _logger;
 	readonly IVolunteerService _volunteerService;
+	readonly IPetService _petService;
 	readonly IMapper _mapper;
 
-	public VolunteerController(ILogger<VolunteerController> logger, IVolunteerService volunteerService, IMapper mapper)
+	public VolunteerController(ILogger<VolunteerController> logger, IVolunteerService volunteerService, IMapper mapper, IPetService petService)
 	{
 		_logger = logger;
 		_volunteerService = volunteerService;
 		_mapper = mapper;
+		_petService = petService;
 	}
 
 	[HttpGet]
@@ -79,12 +81,15 @@ public class VolunteerController : ControllerBase
 		{
 			return NotFound($"Volunteer id '{id}' not found");
 		}
-		var result = _volunteerService.GetCurrentCares(volunteer).Select(pc => pc.Pet);
+		var result = _volunteerService
+			.GetCurrentCares(volunteer)
+			.Select(pc => _mapper.Map<PetDetailsResponse>(pc.Pet))
+			.AsEnumerable();
 		return Ok(result);
 	}
 
 	[HttpPost("{id:guid}/assign-pet")]
-	public async Task<IActionResult> PostVolunteerAssignPet(Guid id, VolunteerAssignPetRequest request, [FromServices] PetService petService)
+	public async Task<IActionResult> PostVolunteerAssignPet(Guid id, VolunteerAssignPetRequest request)
 	{
 		_logger.LogInformation("Get Volunteer id '{id}' request received", id);
 		var volunteer = await _volunteerService.GetVolunteerById(id);
@@ -92,7 +97,7 @@ public class VolunteerController : ControllerBase
 		{
 			return NotFound($"Volunteer id '{id}' not found");
 		}
-		var pet = await petService.GetPetById(request.PetId);
+		var pet = await _petService.GetPetById(request.PetId);
 		if (pet is null)
 		{
 			return NotFound($"Pet id '{request.PetId}' not found");

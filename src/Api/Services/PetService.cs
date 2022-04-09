@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SaveAnAnimal.Api.Models;
 using SaveAnAnimal.Api.Repositories;
 
@@ -41,16 +42,16 @@ public class PetService : IPetService
 		await _petRepository.SaveAsync();
 	}
 
-	public Task<PetCare?> GetCurrentCare(Pet pet)
+	public async Task<PetCare?> GetCurrentCare(Pet pet)
 	{
 		ArgumentNullException.ThrowIfNull(nameof(pet));
 
-		var care = _petCareRepository.GetAll()
+		var care = await _petCareRepository.GetAll()
 			.Where(x => x.Pet == pet)
 			.Where(x => x.To == null)
 			.OrderByDescending(x => x.From)
-			.FirstOrDefault();
-		return Task.FromResult(care);
+			.FirstOrDefaultAsync();
+		return care;
 	}
 
 	public async Task<Volunteer?> GetCurrentCaretaker(Pet pet)

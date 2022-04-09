@@ -64,7 +64,7 @@ public class PetController : ControllerBase
 		var care = await _petService.GetCurrentCare(pet);
 		if (care is null || care.To is not null)
 		{
-			return Ok();
+			return NoContent();
 		}
 		var response = _mapper.Map<PetCareDetailsResponse>(care);
 		return Ok(response);

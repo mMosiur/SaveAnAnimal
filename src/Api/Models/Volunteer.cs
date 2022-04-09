@@ -1,18 +1,13 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace SaveAnAnimal.Api.Models;
 
 public class Volunteer
 {
-	[Required]
 	public Guid Id { get; set; }
 
-	[Required]
 	public string FirstName { get; set; } = null!;
 
 	public string? MiddleName { get; set; }
 
-	[Required]
 	public string LastName { get; set; } = null!;
 
 	public string? Email { get; set; }

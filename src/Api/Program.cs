@@ -39,6 +39,7 @@ builder.Services.AddAutoMapper(config =>
 	config.CreateMap<Pet, PetDetailsResponse>();
 	config.CreateMap<VolunteerDetailsRequest, Volunteer>();
 	config.CreateMap<Volunteer, VolunteerDetailsResponse>();
+	config.CreateMap<PetCare, PetCareDetailsResponse>();
 });
 
 builder.Services.AddScoped<IVolunteerRepository, VolunteerRepository>();
