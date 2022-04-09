@@ -4,9 +4,9 @@ public class PetCare
 {
 	public Guid Id { get; set; }
 
-	public string PetId { get; set; } = string.Empty;
+	public Guid PetId { get; set; }
 
-	public string CaretakerId { get; set; } = string.Empty;
+	public Guid CaretakerId { get; set; }
 
 	public DateTime? From { get; set; }
 
