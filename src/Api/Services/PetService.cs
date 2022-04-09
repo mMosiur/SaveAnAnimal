@@ -7,12 +7,10 @@ public interface IPetService
 {
 	IQueryable<Pet> AllPets();
 	Task CreatePet(Pet pet);
-	Task DeletePet(Guid petId);
-	Task DeletePet(string petId);
+	Task<bool> DeletePet(Guid petId);
 	Task<PetCare?> GetCurrentCare(Pet pet);
 	Task<Volunteer?> GetCurrentCaretaker(Pet pet);
 	Task<Pet?> GetPetById(Guid guid);
-	Task<Pet?> GetPetById(string id);
 	Task UpdatePet(Pet pet);
 }
 
@@ -35,16 +33,6 @@ public class PetService : IPetService
 	public async Task<Pet?> GetPetById(Guid guid)
 	{
 		return await _petRepository.GetAsync(guid);
-	}
-
-	public async Task<Pet?> GetPetById(string id)
-	{
-		bool parsed = UrlGuid.TryFromUrlString(id, out Guid guid);
-		if (!parsed)
-		{
-			throw new FormatException("Invalid id.");
-		}
-		return await GetPetById(guid);
 	}
 
 	public async Task CreatePet(Pet pet)
@@ -79,20 +67,11 @@ public class PetService : IPetService
 		await _petRepository.SaveAsync();
 	}
 
-	public async Task DeletePet(Guid petId)
+	public async Task<bool> DeletePet(Guid petId)
 	{
-		_petRepository.Delete(petId);
+		bool deleted = _petRepository.Delete(petId);
 		await _petRepository.SaveAsync();
-	}
-
-	public async Task DeletePet(string petId)
-	{
-		bool parsed = UrlGuid.TryFromUrlString(petId, out Guid guid);
-		if (!parsed)
-		{
-			throw new FormatException("Invalid id.");
-		}
-		await DeletePet(guid);
+		return deleted;
 	}
 }
 

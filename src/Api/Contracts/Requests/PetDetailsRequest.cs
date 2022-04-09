@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using SaveAnAnimal.Api.Models;
 
-namespace SaveAnAnimal.Api.Contracts;
+namespace SaveAnAnimal.Api.Contracts.Requests;
 
 public class PetDetailsRequest
 {

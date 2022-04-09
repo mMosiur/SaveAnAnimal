@@ -10,7 +10,7 @@ public interface IPetRepository : IDisposable
 	void Add(Pet pet);
 	void Update(Pet pet);
 	void Delete(Pet pet);
-	void Delete(Guid petId);
+	bool Delete(Guid petId);
 	void Save();
 	Task SaveAsync();
 }
@@ -54,13 +54,15 @@ public class PetRepository : IPetRepository, IDisposable
 		_dbContext.Remove(pet);
 	}
 
-	public void Delete(Guid petId)
+	public bool Delete(Guid petId)
 	{
 		var pet = Get(petId);
-		if (pet is not null)
+		if (pet is null)
 		{
-			Delete(pet);
+			return false;
 		}
+		Delete(pet);
+		return true;
 	}
 
 	public void Save()

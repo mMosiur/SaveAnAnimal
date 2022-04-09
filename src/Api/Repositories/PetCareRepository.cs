@@ -10,7 +10,7 @@ public interface IPetCareRepository
 	void Add(PetCare petCare);
 	void Update(PetCare petCare);
 	void Delete(PetCare petCare);
-	void Delete(Guid petCareId);
+	bool Delete(Guid petCareId);
 	void Save();
 	Task SaveAsync();
 }
@@ -34,13 +34,15 @@ public class PetCareRepository : IPetCareRepository, IDisposable
 		_dbContext.PetCares.Remove(petCare);
 	}
 
-	public void Delete(Guid petCareId)
+	public bool Delete(Guid petCareId)
 	{
 		var petCare = Get(petCareId);
-		if (petCare is not null)
+		if (petCare is null)
 		{
-			Delete(petCare);
+			return false;
 		}
+		Delete(petCare);
+		return true;
 	}
 
 	public IQueryable<PetCare> GetAll()

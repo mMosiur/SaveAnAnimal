@@ -1,0 +1,18 @@
+﻿@using SaveAnAnimal.ApiClient;
+@using SaveAnAnimal.ApiClient.Models;
+
+@inject SaveAnAnimalClient client
+
+@page "/volunteers"
+
+<h3>Out helpful volunteers:</h3>
+
+
+
+@code {
+	private IList<Volunteer>? volunteers = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+	}
+}

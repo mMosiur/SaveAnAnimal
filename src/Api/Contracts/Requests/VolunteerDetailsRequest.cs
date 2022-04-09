@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace SaveAnAnimal.Api.Contracts;
+namespace SaveAnAnimal.Api.Contracts.Requests;
 
 public class VolunteerDetailsRequest
 {

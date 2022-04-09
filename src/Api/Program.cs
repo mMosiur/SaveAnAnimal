@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using SaveAnAnimal.Api;
+using SaveAnAnimal.Api.Contracts.Responses;
+using SaveAnAnimal.Api.Contracts.Requests;
+using SaveAnAnimal.Api.Models;
 using SaveAnAnimal.Api.Repositories;
 using SaveAnAnimal.Api.Services;
 using Serilog;
@@ -28,6 +31,14 @@ builder.Logging.AddSerilog(logger);
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
 	options.UseSqlite("Data Source=app.db");
+});
+
+builder.Services.AddAutoMapper(config =>
+{
+	config.CreateMap<PetDetailsRequest, Pet>();
+	config.CreateMap<Pet, PetDetailsResponse>();
+	config.CreateMap<VolunteerDetailsRequest, Volunteer>();
+	config.CreateMap<Volunteer, VolunteerDetailsResponse>();
 });
 
 builder.Services.AddScoped<IVolunteerRepository, VolunteerRepository>();

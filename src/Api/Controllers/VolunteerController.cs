@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SaveAnAnimal.Api.Contracts;
+using SaveAnAnimal.Api.Contracts.Responses;
+using SaveAnAnimal.Api.Contracts.Requests;
 using SaveAnAnimal.Api.Models;
 using SaveAnAnimal.Api.Services;
+using AutoMapper;
 
 namespace SaveAnAnimal.Api.Controllers;
 
@@ -10,46 +12,45 @@ namespace SaveAnAnimal.Api.Controllers;
 [Route("volunteer")]
 public class VolunteerController : ControllerBase
 {
-	readonly ILogger<VolunteerController> logger;
-	readonly IVolunteerService volunteerService;
+	readonly ILogger<VolunteerController> _logger;
+	readonly IVolunteerService _volunteerService;
+	readonly IMapper _mapper;
 
-	public VolunteerController(ILogger<VolunteerController> logger, IVolunteerService volunteerService)
+	public VolunteerController(ILogger<VolunteerController> logger, IVolunteerService volunteerService, IMapper mapper)
 	{
-		this.logger = logger;
-		this.volunteerService = volunteerService;
+		_logger = logger;
+		_volunteerService = volunteerService;
+		_mapper = mapper;
 	}
 
 	[HttpGet]
 	public async Task<IActionResult> GetVolunteers()
 	{
-		var volunteers = volunteerService.AllVolunteers();
+		var volunteers = _volunteerService.AllVolunteers();
+
 		var volunteersList = await volunteers
-			.Select(v => VolunteerDetailsResponse.BuildFrom(v))
+			.Select(v => _mapper.Map<VolunteerDetailsResponse>(v))
 			.ToListAsync();
 		return Ok(volunteersList);
 	}
 
-	[HttpGet("{id}")]
-	public async Task<IActionResult> GetVolunteer(string id)
+	[HttpGet("{id:guid}")]
+	public async Task<IActionResult> GetVolunteer(Guid id)
 	{
-		bool parsed = UrlGuid.TryFromUrlString(id, out Guid guid);
-		if (!parsed)
-		{
-			return BadRequest($"Invalid volunteer id: {id}");
-		}
-		logger.LogInformation("Get Volunteer id '{guid}' request received", guid);
-		var volunteer = await volunteerService.GetVolunteerById(guid);
+		_logger.LogInformation("Get Volunteer id '{id}' request received", id);
+		var volunteer = await _volunteerService.GetVolunteerById(id);
 		if (volunteer is null)
 		{
-			return NotFound($"Volunteer id '{id}' (guid '{guid}') not found");
+			return NotFound($"Volunteer id '{id}' not found");
 		}
-		return Ok(VolunteerDetailsResponse.BuildFrom(volunteer));
+		var response = _mapper.Map<VolunteerDetailsResponse>(volunteer);
+		return Ok(response);
 	}
 
 	[HttpPost]
 	public async Task<IActionResult> PostVolunteer(VolunteerDetailsRequest request)
 	{
-		logger.LogInformation("Post Volunteer request received");
+		_logger.LogInformation("Post Volunteer request received");
 		if (request is null)
 		{
 			return BadRequest("No volunteer data provided");
@@ -64,99 +65,68 @@ public class VolunteerController : ControllerBase
 			Address = request.Address,
 			City = request.City
 		};
-		await volunteerService.CreateVolunteer(volunteer);
-		var response = VolunteerDetailsResponse.BuildFrom(volunteer);
+		await _volunteerService.CreateVolunteer(volunteer);
+		var response = _mapper.Map<VolunteerDetailsResponse>(volunteer);
 		return CreatedAtAction(nameof(GetVolunteer), new { id = response.Id }, response);
-
 	}
 
-	[HttpGet("{id}/pets")]
-	public async Task<IActionResult> GetVolunteerAssignedPets(string id)
+	[HttpGet("{id:guid}/pets")]
+	public async Task<IActionResult> GetVolunteerAssignedPets(Guid id)
 	{
-		bool parsed = UrlGuid.TryFromUrlString(id, out Guid volunteerGuid);
-		if (!parsed)
-		{
-			return BadRequest($"Invalid volunteer id: {id}");
-		}
-		logger.LogInformation("Get Volunteer id '{guid}' request received", volunteerGuid);
-		var volunteer = await volunteerService.GetVolunteerById(volunteerGuid);
-		if (volunteer is null)
-		{
-			return NotFound($"Volunteer id '{id}' (guid '{volunteerGuid}') not found");
-		}
-		var result = volunteerService.GetCurrentCares(volunteer).Select(pc => pc.Pet);
-		return Ok(result);
-	}
-
-	[HttpPost("{id}/assign-pet")]
-	public async Task<IActionResult> PostVolunteerAssignPet(string id, AssignPetRequest request, [FromServices] PetService petService)
-	{
-		bool parsed = UrlGuid.TryFromUrlString(id, out Guid volunteerGuid);
-		if (!parsed)
-		{
-			return BadRequest($"Invalid volunteer id: {id}");
-		}
-		logger.LogInformation("Get Volunteer id '{guid}' request received", volunteerGuid);
-		var volunteer = await volunteerService.GetVolunteerById(volunteerGuid);
-		if (volunteer is null)
-		{
-			return NotFound($"Volunteer id '{id}' (guid '{volunteerGuid}') not found");
-		}
-		parsed = UrlGuid.TryFromUrlString(request.PetId, out Guid petGuid);
-		if (!parsed)
-		{
-			return BadRequest($"Invalid pet id: {request.PetId}");
-		}
-		logger.LogInformation("Post Volunteer Assign Pet request received");
-		var pet = await petService.GetPetById(petGuid);
-		if (pet is null)
-		{
-			return NotFound($"Pet id '{request.PetId}' (guid '{petGuid}') not found");
-		}
-		await volunteerService.AssignPet(volunteer, pet);
-		return Ok();
-	}
-
-	[HttpPut("{id}")]
-	public async Task<IActionResult> UpdateVolunteer(string id, VolunteerDetailsRequest request)
-	{
-		logger.LogInformation("Put Volunteer request received");
-		Volunteer? volunteer;
-		try
-		{
-			volunteer = await volunteerService.GetVolunteerById(id);
-		}
-		catch (FormatException)
-		{
-			return BadRequest($"Invalid volunteer id: '{id}'");
-		}
+		_logger.LogInformation("Get Volunteer id '{id}' request received", id);
+		var volunteer = await _volunteerService.GetVolunteerById(id);
 		if (volunteer is null)
 		{
 			return NotFound($"Volunteer id '{id}' not found");
 		}
-		volunteer.FirstName = request.FirstName;
-		volunteer.MiddleName = request.MiddleName;
-		volunteer.LastName = request.LastName;
-		volunteer.Email = request.Email;
-		volunteer.PhoneNumber = request.PhoneNumber;
-		volunteer.Address = request.Address;
-		volunteer.City = request.City;
-		await volunteerService.UpdateVolunteer(volunteer);
-		return Ok(VolunteerDetailsResponse.BuildFrom(volunteer));
+		var result = _volunteerService.GetCurrentCares(volunteer).Select(pc => pc.Pet);
+		return Ok(result);
 	}
 
-	[HttpDelete("{id}")]
-	public async Task<IActionResult> DeleteVolunteer(string id)
+	[HttpPost("{id:guid}/assign-pet")]
+	public async Task<IActionResult> PostVolunteerAssignPet(Guid id, AssignPetRequest request, [FromServices] PetService petService)
 	{
-		logger.LogInformation("Delete Volunteer request received");
-		try
+		_logger.LogInformation("Get Volunteer id '{id}' request received", id);
+		var volunteer = await _volunteerService.GetVolunteerById(id);
+		if (volunteer is null)
 		{
-			await volunteerService.DeleteVolunteer(id);
-			return Ok();
+			return NotFound($"Volunteer id '{id}' not found");
 		}
-		catch (FormatException)
+		var pet = await petService.GetPetById(request.PetId);
+		if (pet is null)
 		{
-			return BadRequest($"Invalid volunteer id: '{id}'");
+			return NotFound($"Pet id '{request.PetId}' not found");
 		}
+		await _volunteerService.AssignPet(volunteer, pet);
+		return Ok();
+	}
+
+	[HttpPut("{id:guid}")]
+	public async Task<IActionResult> UpdateVolunteer(Guid id, UpdateVolunteerDetailsRequest request)
+	{
+		_logger.LogInformation("Put Volunteer request received");
+		var volunteer = await _volunteerService.GetVolunteerById(id);
+		if (volunteer is null)
+		{
+			return NotFound($"Volunteer id '{id}' not found");
+		}
+		volunteer.FirstName = request.FirstName ?? volunteer.FirstName;
+		volunteer.MiddleName = request.MiddleName ?? volunteer.MiddleName;
+		volunteer.LastName = request.LastName ?? volunteer.LastName;
+		volunteer.Email = request.Email ?? volunteer.Email;
+		volunteer.PhoneNumber = request.PhoneNumber ?? volunteer.PhoneNumber;
+		volunteer.Address = request.Address ?? volunteer.Address;
+		volunteer.City = request.City ?? volunteer.City;
+		await _volunteerService.UpdateVolunteer(volunteer);
+		var response = _mapper.Map<VolunteerDetailsResponse>(volunteer);
+		return Ok(response);
+	}
+
+	[HttpDelete("{id:guid}")]
+	public async Task<IActionResult> DeleteVolunteer(Guid id)
+	{
+		_logger.LogInformation("Delete Volunteer request received");
+		bool deleted = await _volunteerService.DeleteVolunteer(id);
+		return deleted ? Ok() : NotFound($"Volunteer id '{id}' not found");
 	}
 }

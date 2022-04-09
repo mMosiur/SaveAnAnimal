@@ -1,8 +1,9 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SaveAnAnimal.Api.Contracts;
+using SaveAnAnimal.Api.Contracts.Requests;
+using SaveAnAnimal.Api.Contracts.Responses;
 using SaveAnAnimal.Api.Models;
-using SaveAnAnimal.Api.Repositories;
 using SaveAnAnimal.Api.Services;
 
 namespace SaveAnAnimal.Api.Controllers;
@@ -11,32 +12,34 @@ namespace SaveAnAnimal.Api.Controllers;
 [Route("pet")]
 public class PetController : ControllerBase
 {
-	private readonly ILogger<PetController> logger;
-	private readonly IPetService petService;
+	private readonly ILogger<PetController> _logger;
+	private readonly IPetService _petService;
+	private readonly IMapper _mapper;
 
-	public PetController(ILogger<PetController> logger, IPetService petService)
+	public PetController(ILogger<PetController> logger, IPetService petService, IMapper mapper)
 	{
-		this.logger = logger;
-		this.petService = petService;
+		_logger = logger;
+		_petService = petService;
+		_mapper = mapper;
 	}
 
 	[HttpGet]
 	public async Task<IActionResult> GetPets()
 	{
-		var pets = petService.AllPets();
+		var pets = _petService.AllPets();
 		var petList = await pets
-			.Select(p => PetDetailsResponse.BuildFrom(p))
+			.Select(p => _mapper.Map<PetDetailsResponse>(p))
 			.ToListAsync();
 		return Ok(petList);
 	}
 
-	[HttpGet("{id}")]
-	public async Task<IActionResult> GetPet(string id)
+	[HttpGet("{id:guid}")]
+	public async Task<IActionResult> GetPet(Guid id)
 	{
 		Pet? pet;
 		try
 		{
-			pet = await petService.GetPetById(id);
+			pet = await _petService.GetPetById(id);
 		}
 		catch(FormatException)
 		{
@@ -46,16 +49,17 @@ public class PetController : ControllerBase
 		{
 			return NotFound($"Pet id '{id}' not found");
 		}
-		return Ok(PetDetailsResponse.BuildFrom(pet));
+		var response = _mapper.Map<PetDetailsResponse>(pet);
+		return Ok(response);
 	}
 
-	[HttpGet("{id}/current-care")]
-	public async Task<IActionResult> GetPetCurrentCare(string id)
+	[HttpGet("{id:guid}/current-care")]
+	public async Task<IActionResult> GetPetCurrentCare(Guid id)
 	{
 		Pet? pet;
 		try
 		{
-			pet = await petService.GetPetById(id);
+			pet = await _petService.GetPetById(id);
 		}
 		catch (FormatException)
 		{
@@ -65,65 +69,47 @@ public class PetController : ControllerBase
 		{
 			return NotFound($"Pet id '{id}' not found");
 		}
-		var care = await petService.GetCurrentCare(pet);
+		var care = await _petService.GetCurrentCare(pet);
 		if (care is null || care.To is not null)
 		{
 			return NotFound($"Pet id '{id}' is not currently being cared for");
 		}
-		return Ok(PetCareDetailsResponse.BuildFrom(care));
+		var response = _mapper.Map<PetCareDetailsResponse>(care);
+		return Ok(response);
 	}
 
 	[HttpPost]
 	public async Task<IActionResult> CreatePet(PetDetailsRequest request)
 	{
-		logger.LogInformation("Post Pet request received");
-		var pet = new Pet()
-		{
-			Name = request.Name,
-			Type = request.Type,
-			Color = request.Color
-		};
-		await petService.CreatePet(pet);
-		var response = PetDetailsResponse.BuildFrom(pet);
+		_logger.LogInformation("Post Pet request received");
+		var pet = _mapper.Map<Pet>(request);
+		await _petService.CreatePet(pet);
+		var response = _mapper.Map<PetDetailsResponse>(pet);
 		return Created($"/pet/{response.Id}", response);
 	}
 
-	[HttpPut("{id}")]
-	public async Task<IActionResult> UpdatePet(string id, PetDetailsRequest request)
+	[HttpPut("{id:guid}")]
+	public async Task<IActionResult> UpdatePet(Guid id, UpdatePetDetailsRequest request)
 	{
-		logger.LogInformation("Put Pet request received");
-		Pet? pet;
-		try
-		{
-			pet = await petService.GetPetById(id);
-		}
-		catch (FormatException)
-		{
-			return BadRequest($"Invalid pet id: '{id}'");
-		}
+		_logger.LogInformation("Put Pet request received");
+		var pet = await _petService.GetPetById(id);
 		if (pet is null)
 		{
 			return NotFound($"Pet id '{id}' not found");
 		}
-		pet.Name = request.Name;
-		pet.Type = request.Type;
-		pet.Color = request.Color;
-		await petService.UpdatePet(pet);
-		return Ok(PetDetailsResponse.BuildFrom(pet));
+		pet.Name = request.Name ?? pet.Name;
+		pet.Type = request.Type ?? pet.Type;
+		pet.Color = request.Color ?? pet.Color;
+		await _petService.UpdatePet(pet);
+		var response = _mapper.Map<PetDetailsResponse>(pet);
+		return Ok(response);
 	}
 
-	[HttpDelete("{id}")]
-	public async Task<IActionResult> DeletePet(string id)
+	[HttpDelete("{id:guid}")]
+	public async Task<IActionResult> DeletePet(Guid id)
 	{
-		logger.LogInformation("Delete Pet request received");
-		try
-		{
-			await petService.DeletePet(id);
-			return Ok();
-		}
-		catch (FormatException)
-		{
-			return BadRequest($"Invalid volunteer id: '{id}'");
-		}
+		_logger.LogInformation("Delete Pet request received");
+		bool deleted = await _petService.DeletePet(id);
+		return deleted ? Ok() : NotFound($"Pet id '{id}' not found");
 	}
 }

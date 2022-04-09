@@ -10,7 +10,7 @@ public interface IVolunteerRepository
 	void Add(Volunteer volunteer);
 	void Update(Volunteer volunteer);
 	void Delete(Volunteer volunteer);
-	void Delete(Guid volunteerId);
+	bool Delete(Guid volunteerId);
 	void Save();
 	Task SaveAsync();
 }
@@ -34,13 +34,15 @@ public class VolunteerRepository : IVolunteerRepository, IDisposable
 		_dbContext.Volunteers.Remove(volunteer);
 	}
 
-	public void Delete(Guid volunteerId)
+	public bool Delete(Guid volunteerId)
 	{
 		var volunteer = Get(volunteerId);
-		if (volunteer is not null)
+		if (volunteer is null)
 		{
-			_dbContext.Volunteers.Remove(volunteer);
+			return false;
 		}
+		_dbContext.Volunteers.Remove(volunteer);
+		return true;
 	}
 
 	public Volunteer? Get(Guid volunteerId)

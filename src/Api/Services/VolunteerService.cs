@@ -9,11 +9,9 @@ public interface IVolunteerService
 	IQueryable<Volunteer> AllVolunteers();
 	Task AssignPet(Volunteer volunteer, Pet pet);
 	Task CreateVolunteer(Volunteer volunteer);
-	Task DeleteVolunteer(Guid volunteerId);
-	Task DeleteVolunteer(string volunteerId);
+	Task<bool> DeleteVolunteer(Guid volunteerId);
 	IQueryable<PetCare> GetCurrentCares(Volunteer volunteer);
 	Task<Volunteer?> GetVolunteerById(Guid volunteerId);
-	Task<Volunteer?> GetVolunteerById(string volunteerId);
 	Task UpdateVolunteer(Volunteer volunteer);
 }
 
@@ -36,16 +34,6 @@ public class VolunteerService : IVolunteerService
 	public async Task<Volunteer?> GetVolunteerById(Guid volunteerId)
 	{
 		return await _volunteerRepository.GetAsync(volunteerId);
-	}
-
-	public async Task<Volunteer?> GetVolunteerById(string volunteerId)
-	{
-		bool parsed = UrlGuid.TryFromUrlString(volunteerId, out Guid guid);
-		if (!parsed)
-		{
-			throw new FormatException("Invalid id.");
-		}
-		return await _volunteerRepository.GetAsync(guid);
 	}
 
 	public async Task CreateVolunteer(Volunteer volunteer)
@@ -90,19 +78,10 @@ public class VolunteerService : IVolunteerService
 		await _volunteerRepository.SaveAsync();
 	}
 
-	public async Task DeleteVolunteer(Guid volunteerId)
+	public async Task<bool> DeleteVolunteer(Guid volunteerId)
 	{
-		_volunteerRepository.Delete(volunteerId);
+		bool deleted = _volunteerRepository.Delete(volunteerId);
 		await _volunteerRepository.SaveAsync();
-	}
-
-	public async Task DeleteVolunteer(string volunteerId)
-	{
-		bool parsed = UrlGuid.TryFromUrlString(volunteerId, out Guid guid);
-		if (!parsed)
-		{
-			throw new FormatException("Invalid id.");
-		}
-		await DeleteVolunteer(guid);
+		return deleted;
 	}
 }

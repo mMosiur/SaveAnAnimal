@@ -2,7 +2,6 @@
 @using SaveAnAnimal.ApiClient.Models
 
 @inject SaveAnAnimalClient client
-@inject ILogger<AllPets> logger
 
 @page "/pets"
 
@@ -34,7 +33,6 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		logger.LogWarning("Hello");
 		pets = await client.GetPetsAsync();
 	}
 }
