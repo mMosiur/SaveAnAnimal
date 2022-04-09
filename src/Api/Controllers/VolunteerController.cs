@@ -102,8 +102,8 @@ public class VolunteerController : ControllerBase
 		{
 			return NotFound($"Pet id '{request.PetId}' not found");
 		}
-		await _volunteerService.AssignPet(volunteer, pet);
-		return Ok();
+		var care = await _volunteerService.AssignPet(volunteer, pet);
+		return Ok(_mapper.Map<PetCareDetailsResponse>(care));
 	}
 
 	[HttpPut("{id:guid}")]

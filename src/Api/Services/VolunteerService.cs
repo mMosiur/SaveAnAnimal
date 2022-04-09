@@ -7,7 +7,7 @@ namespace SaveAnAnimal.Api.Services;
 public interface IVolunteerService
 {
 	IQueryable<Volunteer> AllVolunteers();
-	Task AssignPet(Volunteer volunteer, Pet pet);
+	Task<PetCare> AssignPet(Volunteer volunteer, Pet pet);
 	Task CreateVolunteer(Volunteer volunteer);
 	Task<bool> DeleteVolunteer(Guid volunteerId);
 	IQueryable<PetCare> GetCurrentCares(Volunteer volunteer);
@@ -49,7 +49,7 @@ public class VolunteerService : IVolunteerService
 			.Where(x => x.To == null);
 	}
 
-	public async Task AssignPet(Volunteer volunteer, Pet pet)
+	public async Task<PetCare> AssignPet(Volunteer volunteer, Pet pet)
 	{
 		var care = await _petCareRepository.GetAll()
 			.Where(pc => pc.Pet == pet)
@@ -68,6 +68,7 @@ public class VolunteerService : IVolunteerService
 		};
 		_petCareRepository.Add(care);
 		await _petCareRepository.SaveAsync();
+		return care;
 	}
 
 	public async Task UpdateVolunteer(Volunteer volunteer)
