@@ -9,3 +9,23 @@ Based on a very simple frontend - backend architecture with a **ASP.NET WebAPI**
 
 Also, an awful try at applying DDD to a project that backfired and made the application even worse to maintain and extend.
 As such, it is still unfinished. Lesson learned I guess.
+
+## API
+
+To prepare SQLite database for the api in project folder (`src/Api`) use
+
+``` bash
+dotnet ef database update
+```
+
+To run, use
+
+``` bash
+dotnet run
+```
+
+To run on specific URL and port, use eg.
+
+``` bash
+dotnet run --urls http://localhost:5236
+```
