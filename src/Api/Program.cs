@@ -47,6 +47,7 @@ builder.Services.AddScoped<IPetRepository, PetRepository>();
 builder.Services.AddScoped<IPetCareRepository, PetCareRepository>();
 builder.Services.AddScoped<IVolunteerService, VolunteerService>();
 builder.Services.AddScoped<IPetService, PetService>();
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -62,6 +63,8 @@ app.MapControllers();
 app.UseCors(policy =>
 {
 	policy.AllowAnyOrigin();
+	policy.AllowAnyMethod();
+	policy.AllowAnyHeader();
 });
 
 app.Run();
