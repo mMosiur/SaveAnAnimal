@@ -1,0 +1,88 @@
+@using SaveAnAnimal.ApiClient
+@using SaveAnAnimal.ApiClient.Contracts.Requests
+
+@inject SaveAnAnimalClient client
+@inject NavigationManager navManager
+
+@page "/volunteers/new"
+
+<h3>Add a new volunteer:</h3>
+
+<label for="add-pet-input-first-name">First name:</label>
+<input id="add-pet-input-first-name" type="text" @bind="VolunteerFirstNameInput" @bind:event="oninput" />
+<br>
+<label for="add-pet-input-middle-name">Middle name:</label>
+<input id="add-pet-input-middle-name" type="text" @bind="VolunteerMiddleNameInput" @bind:event="oninput" />
+<br>
+<label for="add-pet-input-last-name">First name:</label>
+<input id="add-pet-input-last-name" type="text" @bind="VolunteerLastNameInput" @bind:event="oninput" />
+<br>
+<label for="add-pet-input-email">Email:</label>
+<input id="add-pet-input-email" type="email" @bind="VolunteerEmailInput" @bind:event="oninput" />
+<br>
+<label for="add-pet-input-phone-number">Phone number:</label>
+<input id="add-pet-input-phone-number" type="text" @bind="VolunteerPhoneNumberInput" @bind:event="oninput" />
+<br>
+<label for="add-pet-input-city">City:</label>
+<input id="add-pet-input-city" type="text" @bind="VolunteerCityInput" @bind:event="oninput" />
+<br>
+<label for="add-pet-input-address">Address:</label>
+<input id="add-pet-input-address" type="text" @bind="VolunteerAddressInput" @bind:event="oninput" />
+<br>
+
+<button class="btn btn-primary" @onclick="AddPet">Add</button>
+
+<p>@Error</p>
+
+@code {
+	public string? VolunteerFirstNameInput { get; set; }
+    public string? VolunteerMiddleNameInput { get; set; }
+    public string? VolunteerLastNameInput { get; set; }
+    public string? VolunteerEmailInput { get; set; }
+    public string? VolunteerPhoneNumberInput { get; set; }
+    public string? VolunteerCityInput { get; set; }
+    public string? VolunteerAddressInput { get; set; }
+
+	public string? Error { get; private set; }
+
+	private async Task AddPet()
+	{
+		if(string.IsNullOrWhiteSpace(VolunteerFirstNameInput) || string.IsNullOrWhiteSpace(VolunteerLastNameInput))
+		{
+			Error = "First and last name are required";
+			return;
+		}
+        if(string.IsNullOrWhiteSpace(VolunteerMiddleNameInput))
+        {
+            VolunteerMiddleNameInput = null;
+        }
+        if(string.IsNullOrWhiteSpace(VolunteerEmailInput))
+        {
+            VolunteerEmailInput = null;
+        }
+        if(string.IsNullOrWhiteSpace(VolunteerPhoneNumberInput))
+        {
+            VolunteerPhoneNumberInput = null;
+        }
+        if(string.IsNullOrWhiteSpace(VolunteerCityInput))
+        {
+            VolunteerCityInput = null;
+        }
+        if(string.IsNullOrWhiteSpace(VolunteerAddressInput))
+        {
+            VolunteerAddressInput = null;
+        }
+		var request = new VolunteerDetailsRequest(
+            VolunteerFirstNameInput,
+            VolunteerMiddleNameInput,
+            VolunteerLastNameInput,
+            VolunteerEmailInput,
+            VolunteerPhoneNumberInput,
+            VolunteerAddressInput,
+            VolunteerCityInput
+		);
+		var volunteer = await client.CreateVolunteerAsync(request);
+		navManager.NavigateTo($"/volunteer/{volunteer.Id}");
+		Error = "";
+	}
+}

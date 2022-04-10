@@ -1,14 +1,38 @@
-﻿@using SaveAnAnimal.ApiClient;
-@using SaveAnAnimal.ApiClient.Models;
+﻿@using SaveAnAnimal.ApiClient
+@using SaveAnAnimal.ApiClient.Models
 
 @inject SaveAnAnimalClient client
 
 @page "/volunteers"
 
-<h3>Out helpful volunteers:</h3>
+<h3>Our helpful volunteers:</h3>
 
+@if (volunteers is null)
+{
+	<p>Loading data...</p>
+}
+else if(volunteers.Count == 0)
+{
+	<p>None</p>
+}
+else
+{
+	<ul>
+	@foreach (var volunteer in volunteers)
+		{
+			string link = "volunteer/" + @volunteer.Id;
+			<li><NavLink href="@link">@volunteer.FullName</NavLink></li>
+		}
+	</ul>
+}
 
+<NavLink href="/volunteers/new">Add a new voluneer</NavLink>
 
 @code {
 	private IList<Volunteer>? volunteers = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		volunteers = (await client.GetVolunteersAsync()).ToList();
+	}
 }

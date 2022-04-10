@@ -1,0 +1,59 @@
+﻿@using SaveAnAnimal.ApiClient
+@using SaveAnAnimal.ApiClient.Models
+@using SaveAnAnimal.ApiClient.Contracts.Requests
+
+@inject SaveAnAnimalClient client
+@inject NavigationManager navManager
+
+@page "/pets/new"
+
+<h3>Add new pet:</h3>
+
+<label for="add-pet-input-name">Name:</label>
+<input id="add-pet-input-name" type="text" @bind="PetNameInput" @bind:event="oninput" />
+<br>
+<label for="add-pet-input-type">Type:</label>
+<select id="add-pet-input-type" @bind="PetTypeInput" @bind:event="oninput">
+  <option value="Unknown">Unknown</option>
+  <option value="Cat">Cat</option>
+  <option value="Dog">Dog</option>
+</select>
+<br>
+<label for="add-pet-input-age">Age:</label>
+<input min="0" id="add-pet-input-age" type="number" @bind="PetAgeInput" @bind:event="oninput" />
+<br>
+<label for="add-pet-input-color">Color:</label>
+<input id="add-pet-input-color" type="text" @bind="PetColorInput" @bind:event="oninput" />
+
+<br>
+
+<button class="btn btn-primary" @onclick="AddPet">Add</button>
+
+<p>@Error</p>
+
+@code {
+	public string? PetNameInput { get; set; }
+	public string? PetTypeInput { get; set; } = PetType.Unknown.ToString();
+	public int? PetAgeInput { get; set; }
+	public string? PetColorInput { get; set; }
+
+	public string? Error { get; private set; }
+
+	private async Task AddPet()
+	{
+		if(string.IsNullOrWhiteSpace(PetNameInput))
+		{
+			Error = "Pet name cannot be empty";
+			return;
+		}
+		var request = new PetDetailsRequest(
+			PetNameInput,
+			(PetType)Enum.Parse(typeof(PetType), PetTypeInput!),
+			PetAgeInput,
+			PetColorInput
+		);
+		var pet = await client.CreatePetAsync(request);
+		navManager.NavigateTo($"/pet/{pet.Id}");
+		Error = "";
+	}
+}
