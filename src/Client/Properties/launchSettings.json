@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "SaveAnAnimal.Client": {
+    "Client": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
